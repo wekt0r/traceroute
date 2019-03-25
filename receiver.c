@@ -44,32 +44,28 @@ int receive_icmp(int sockfd, struct timeval *timedelta, uint16_t *received_id, u
         return TIMEOUT;
     }
 
-    ssize_t packet_len = recvfrom(sockfd, buffer, IP_MAXPACKET, 0,
-                                  (struct sockaddr*)&sender, &sender_len);
+    if (recvfrom(sockfd, buffer, IP_MAXPACKET, 0,
+                 (struct sockaddr*)&sender, &sender_len) < 0){
+        handle_error("recvfrom");
+    }
+
 
     char sender_ip_str[20];
     inet_ntop(AF_INET, &(sender.sin_addr), sender_ip_str, sizeof(sender_ip_str));
-    //strcpy(ip, sender_ip_str);
     sprintf(ip, "%s", sender_ip_str);
-    //fprintf(stderr,"********from %s to %s at ptr %p\n", sender_ip_str, ip, &ip);
 
     struct iphdr* ip_header = (struct iphdr*) buffer;
     struct icmphdr* icmp_header = get_icmp_header(ip_header);
 
-    //fprintf(stderr,"*******%d %d %d %d\n", icmp_header->type, icmp_header->code, icmp_header->un.echo.id, icmp_header->un.echo.sequence);
     *received_id = icmp_header->un.echo.id;
     *received_ttl = icmp_header->un.echo.sequence;
     if (icmp_header->type == ICMP_TIME_EXCEEDED){
         struct iphdr* ip_header2 = get_inner_ip_header(icmp_header);
         struct icmphdr* icmp_header2 = get_icmp_header(ip_header2);
-    //    fprintf(stderr,"11: %d %d %d %d\n", icmp_header2->type, icmp_header2->code, icmp_header2->un.echo.id, icmp_header2->un.echo.sequence);
         *received_id = icmp_header2->un.echo.id;
         *received_ttl = icmp_header2->un.echo.sequence;
     }
-//    assert(*received_id == getpid());
-    // if (sequence == ttl){
-    // //    fprintf(stderr," %s \n", sender_ip_str);
-    // }
+
     if (icmp_header->type == ICMP_ECHOREPLY){
         return REACHED;
     }

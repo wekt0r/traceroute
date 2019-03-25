@@ -25,12 +25,6 @@
 #include "receiver.h"
 #include "printer.h"
 
-#define UNDEF -1
-#define TIMEOUT 1
-#define REACHED 2
-#define RECEIVED 3
-#define N 3
-
 #define handle_error(msg) \
         do { perror(msg); exit(EXIT_FAILURE); } while (0)
 
@@ -71,7 +65,6 @@ void traceroute(int sockfd, char *dest_ip){
         print_response(received_responses, ips, waiting_times);
 
         if(is_host_reached(received_responses)){
-            fprintf(stderr, "reached\n");
             break;
         }
     }
@@ -92,8 +85,5 @@ int main(int argc, char *argv[]){
     int sockfd = socket(AF_INET, SOCK_RAW, IPPROTO_ICMP);
 
     traceroute(sockfd, argv[1]);
-
-    fprintf(stderr,"*|* %d *|*\n", getpid());
     close(sockfd);
-
 }

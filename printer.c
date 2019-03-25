@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <sys/time.h>
 #include <string.h>
+#include <strings.h>
 #include <stdio.h>
 
 #define UNDEF -1
@@ -16,10 +17,10 @@ int is_host_reached(int *received_responses){
 void remove_duplicates(char ips[][20]){
     qsort(ips, 3, 20, (int (*)(const void *, const void *))strcmp);
     if (strcmp(ips[1], ips[2]) == 0){
-        ips[2][0] = 0;
+        bzero(ips[2], 20);
     }
     if (strcmp(ips[0], ips[1]) == 0){
-        ips[1][0] = 0;
+        bzero(ips[1], 20);
     }
     qsort(ips, 3, 20, (int (*)(const void *, const void *))strcmp);
 }
