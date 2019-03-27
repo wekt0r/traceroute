@@ -24,6 +24,9 @@
 #include "sender.h"
 #include "receiver.h"
 #include "printer.h"
+#include "constants.h"
+
+#define N 3
 
 #define handle_error(msg) \
         do { perror(msg); exit(EXIT_FAILURE); } while (0)
@@ -35,31 +38,33 @@ void set_timeout(struct timeval *tv){
 void traceroute(int sockfd, char *dest_ip){
     for(int ttl=1; ttl <= 30; ttl++){
         for(int i = 0; i < N; i++){
-            send_icmp(sockfd, dest_ip, ttl);
+            send_icmp(sockfd, dest_ip, ttl, i);
         }
-        struct timeval start_time, timedelta, end_time;
+        struct timeval start_time, timeout, end_time, current_time;
         struct timeval waiting_times[N];
+
         gettimeofday(&start_time, NULL);
-        set_timeout(&timedelta);
-        timeradd(&start_time, &timedelta, &end_time);
+        set_timeout(&timeout);
+        timeradd(&start_time, &timeout, &end_time);
 
         char ips[N][20];
         printf("%d. ", ttl);
-        int received_responses[N] = {-1, -1, -1};
+        int received_responses[N] = {UNDEF, UNDEF, UNDEF};
         for(int i = 0; i < N; i++){
-            uint16_t received_id = -1, received_ttl = -1;
-            while((received_id != (uint16_t) getpid() || received_ttl != ttl) && received_responses[i] != TIMEOUT){
-                received_responses[i] = receive_icmp(sockfd, &timedelta, &received_id, &received_ttl, ips[i]);
+            uint16_t received_id = -1, received_seq = -1;
+
+            gettimeofday(&current_time, NULL);
+            timersub(&end_time, &current_time, &timeout);
+
+            while((received_id != (uint16_t) getpid() || received_seq != 3*ttl + i) && received_responses[i] != TIMEOUT){
+                received_responses[i] = receive_icmp(sockfd, &timeout, &received_id, &received_seq, ips[i]);
             }
+
             if (received_responses[i] == TIMEOUT){
                 break;
             }
             gettimeofday(&waiting_times[i], NULL);
             timersub(&waiting_times[i], &start_time, &waiting_times[i]);
-            if (timercmp(&timedelta, &waiting_times[i], <=)){
-                break;
-            }
-            timersub(&timedelta, &waiting_times[i], &timedelta);
 
         }
         print_response(received_responses, ips, waiting_times);

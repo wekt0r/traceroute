@@ -4,11 +4,7 @@
 #include <strings.h>
 #include <stdio.h>
 
-#define UNDEF -1
-#define TIMEOUT 1
-#define REACHED 2
-#define RECEIVED 3
-#define N 3
+#include "constants.h"
 
 int is_host_reached(int *received_responses){
     return received_responses[0] == REACHED || received_responses[1] == REACHED || received_responses[2] == REACHED;
@@ -27,7 +23,6 @@ void remove_duplicates(char ips[][20]){
 
 void print_response(int *rr, char ips[][20], struct timeval *waiting_times){
     int responses_count = (rr[0] > TIMEOUT) + (rr[1] > TIMEOUT) + (rr[2] > TIMEOUT);
-    //fprintf(stderr, "-rr----> %d, %d, %d\n", rr[0], rr[1], rr[2]);
     switch (responses_count) {
         case 0:
             printf("* \n");

@@ -20,18 +20,18 @@ u_int16_t compute_icmp_checksum (const void *buff, int length){
 	return (u_int16_t)(~(sum + (sum >> 16)));
 }
 
-void fill_icmp_header(struct icmphdr *icmp_header, int ttl){
+void fill_icmp_header(struct icmphdr *icmp_header, int ttl, int i){
     icmp_header->type = ICMP_ECHO;
     icmp_header->code = 0;
     icmp_header->un.echo.id = (uint16_t) getpid(); //unikatowy identyfikator, np. PID
-    icmp_header->un.echo.sequence = (uint16_t) ttl;    // numer sekwencyjny
+    icmp_header->un.echo.sequence = (uint16_t) 3*ttl + i;    // numer sekwencyjny
     icmp_header->checksum = 0;
     icmp_header->checksum = compute_icmp_checksum ((u_int16_t*) icmp_header, sizeof(*icmp_header));
 }
 
-void send_icmp(int sockfd, const char *addr, int ttl){
+void send_icmp(int sockfd, const char *addr, int ttl, int i){
     struct icmphdr icmp_header;
-    fill_icmp_header(&icmp_header, ttl);
+    fill_icmp_header(&icmp_header, ttl, i);
 
     struct sockaddr_in recipient;
     bzero (&recipient, sizeof(recipient));

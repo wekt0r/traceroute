@@ -14,7 +14,7 @@
 
 #include <sys/select.h>
 
-#include "receiver.h"
+#include "constants.h"
 
 #define handle_error(msg) \
         do { perror(msg); exit(EXIT_FAILURE); } while (0)
@@ -27,7 +27,7 @@ struct iphdr* get_inner_ip_header(struct icmphdr* icmp_header){
     return (void*)icmp_header + 8;
 }
 
-int receive_icmp(int sockfd, struct timeval *timedelta, uint16_t *received_id, uint16_t *received_ttl, char *ip){
+int receive_icmp(int sockfd, struct timeval *timedelta, uint16_t *received_id, uint16_t *received_seq, char *ip){
     struct sockaddr_in sender;
     socklen_t sender_len = sizeof(sender);
     u_int8_t buffer[IP_MAXPACKET];
@@ -37,18 +37,12 @@ int receive_icmp(int sockfd, struct timeval *timedelta, uint16_t *received_id, u
     FD_SET (sockfd, &descriptors);
 
     int ready = select(sockfd+1, &descriptors, NULL, NULL, timedelta);
-    if (ready < 0){
-        handle_error("select");
-    }
-    if (ready == 0){
-        return TIMEOUT;
-    }
+    if (ready < 0) handle_error("select");
+    if (ready == 0) return TIMEOUT;
 
     if (recvfrom(sockfd, buffer, IP_MAXPACKET, 0,
-                 (struct sockaddr*)&sender, &sender_len) < 0){
+                 (struct sockaddr*)&sender, &sender_len) < 0)
         handle_error("recvfrom");
-    }
-
 
     char sender_ip_str[20];
     inet_ntop(AF_INET, &(sender.sin_addr), sender_ip_str, sizeof(sender_ip_str));
@@ -58,12 +52,12 @@ int receive_icmp(int sockfd, struct timeval *timedelta, uint16_t *received_id, u
     struct icmphdr* icmp_header = get_icmp_header(ip_header);
 
     *received_id = icmp_header->un.echo.id;
-    *received_ttl = icmp_header->un.echo.sequence;
+    *received_seq = icmp_header->un.echo.sequence;
     if (icmp_header->type == ICMP_TIME_EXCEEDED){
         struct iphdr* ip_header2 = get_inner_ip_header(icmp_header);
         struct icmphdr* icmp_header2 = get_icmp_header(ip_header2);
         *received_id = icmp_header2->un.echo.id;
-        *received_ttl = icmp_header2->un.echo.sequence;
+        *received_seq = icmp_header2->un.echo.sequence;
     }
 
     if (icmp_header->type == ICMP_ECHOREPLY){
