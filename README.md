@@ -1,6 +1,6 @@
-Sposób użycia:
-```
-> sudo ./traceroute 8.8.8.8
-```
+Przykład użycia:
 
-
+```
+$ make
+# ./traceroute 8.8.8.8
+```

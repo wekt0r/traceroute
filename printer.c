@@ -1,3 +1,5 @@
+// Wiktor Garbarek 291963
+
 #include <stdlib.h>
 #include <sys/time.h>
 #include <string.h>

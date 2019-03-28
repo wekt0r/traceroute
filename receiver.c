@@ -1,3 +1,5 @@
+// Wiktor Garbarek 291963
+
 #include <stdio.h>
 #include <unistd.h>
 #include <sys/types.h>

@@ -84,7 +84,7 @@ int main(int argc, char *argv[]){
 	struct in_addr addr;
 
 	if (inet_aton(argv[1], &addr) == 0) {
-        	fprintf(stderr, "Invalid address - expected form: x.x.x.x \n");
+        	fprintf(stderr, "Invalid address - expected form: x.y.z.t \n");
         	exit(EXIT_FAILURE);
     }
     int sockfd = socket(AF_INET, SOCK_RAW, IPPROTO_ICMP);
