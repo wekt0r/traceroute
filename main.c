@@ -56,7 +56,7 @@ void traceroute(int sockfd, char *dest_ip){
             gettimeofday(&current_time, NULL);
             timersub(&end_time, &current_time, &timeout);
 
-            while((received_id != (uint16_t) getpid() || received_seq != 3*ttl + i) && received_responses[i] != TIMEOUT){
+            while((received_id != (uint16_t) getpid() || received_seq/3 != ttl) && received_responses[i] != TIMEOUT){
                 received_responses[i] = receive_icmp(sockfd, &timeout, &received_id, &received_seq, ips[i]);
             }
 
