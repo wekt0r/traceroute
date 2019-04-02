@@ -23,6 +23,14 @@ void remove_duplicates(char ips[][20]){
     qsort(ips, 3, 20, (int (*)(const void *, const void *))strcmp);
 }
 
+double avg_timeval(int n, struct timeval *times){
+	double res = 0.0;
+	for (int i = 0; i < n; i++){
+		res += times[i].tv_usec/(n*1000.0);
+	}
+	return res;
+}
+
 void print_response(int *rr, char ips[][20], struct timeval *waiting_times){
     int responses_count = (rr[0] > TIMEOUT) + (rr[1] > TIMEOUT) + (rr[2] > TIMEOUT);
     switch (responses_count) {
@@ -41,7 +49,12 @@ void print_response(int *rr, char ips[][20], struct timeval *waiting_times){
             break;
         case 3:
             remove_duplicates(ips);
-            printf("%s %s %s %.0fms\n", ips[2], ips[1], ips[0],  (waiting_times[0].tv_usec/1000.0 + waiting_times[1].tv_usec/1000.0 + waiting_times[2].tv_usec/1000.0)/3.0 );
+	    for (int i = 2; i >= 0; i--){
+	    	if (ips[i][0] != 0){ 
+		    printf("%s ", ips[i]);
+		}
+	    }
+            printf("%.0fms\n", avg_timeval(3, waiting_times));
             break;
     }
 
